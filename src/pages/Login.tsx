@@ -74,7 +74,7 @@ export const Login = () => {
       <LoginCard>
         <Logo>
           <SquareActivity size={32} />
-          ACE Medical Imaging
+          Scanalyze Imaging
         </Logo>
         <LoginForm onSubmit={handleSubmit}>
           <FormGroup>

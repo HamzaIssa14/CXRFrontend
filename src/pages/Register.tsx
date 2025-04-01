@@ -78,7 +78,7 @@ export const Register = () => {
       <RegisterCard>
         <Logo>
           <SquareActivity size={32} />
-          ACE Medical Imaging
+          Scanalyze Imaging
         </Logo>
         <RegisterForm onSubmit={handleSubmit}>
           <FormGroup>

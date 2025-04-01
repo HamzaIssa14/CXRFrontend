@@ -92,7 +92,7 @@ export const Home = () => {
       <Navbar />
       <Container>
         <Hero>
-          <Title>Welcome to ACE Medical Imaging</Title>
+          <Title>Welcome to Scanalyze Medical Imaging</Title>
           <Subtitle>
             Access state-of-the-art machine learning models through a simple interface
           </Subtitle>

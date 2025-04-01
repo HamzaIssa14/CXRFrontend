@@ -84,6 +84,9 @@ export const ModelPage = () => {
   const [predictions, setPredictions] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const [probabilities, setProbabilities] = useState<{ [label: string]: number } | null>(null);
+
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -122,7 +125,8 @@ export const ModelPage = () => {
 
         if (response && response.predictions) {
             console.log("Setting predictions state:", response.predictions);
-            setPredictions([...response.predictions]); // ✅ Ensure React state updates
+            setPredictions([...response.predictions]);
+            setProbabilities(response.probabilities || null);
         } else {
             console.log("No findings detected.");
             setPredictions(["No abnormalities detected."]);
@@ -134,6 +138,95 @@ export const ModelPage = () => {
         setIsProcessing(false);
     }
 };
+
+const HeatmapTable: React.FC<{ probabilities: Record<string, number> }> = ({ probabilities }) => {
+  const sorted = Object.entries(probabilities).sort(([, a], [, b]) => b - a);
+
+  const getColor = (value: number): string => {
+    const hue = (1 - value) * 120; // Green to red
+    return `hsl(${hue}, 80%, 50%)`;
+  };
+
+  return (
+    <div style={{ marginTop: '2rem' }}>
+      <h3 style={{ marginBottom: '0.75rem' }}>Class Probabilities:</h3>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <tbody>
+          {sorted.map(([label, value]) => (
+            <tr key={label}>
+              <td
+                style={{
+                  padding: '8px',
+                  backgroundColor: '#1f2937',
+                  color: '#fff',
+                  border: '1px solid #374151',
+                  fontWeight: 500
+                }}
+              >
+                {label}
+              </td>
+              <td
+                style={{
+                  padding: '8px',
+                  backgroundColor: getColor(value),
+                  color: '#fff',
+                  border: '1px solid #374151',
+                  fontWeight: 500,
+                  textAlign: 'right',
+                  width: '30%'
+                }}
+              >
+                {(value * 100).toFixed(2)}%
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const HeatBlockGrid: React.FC<{ probabilities: Record<string, number> }> = ({ probabilities }) => {
+  const sorted = Object.entries(probabilities).sort(([, a], [, b]) => b - a);
+
+  const getColor = (value: number): string => {
+    const hue = (1 - value) * 120; // red (high) to green (low)
+    return `hsl(${hue}, 85%, 60%)`;
+  };
+
+  return (
+    <div style={{ marginTop: '2rem' }}>
+      <h3 style={{ marginBottom: '1rem' }}>Heatmap View:</h3>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+          gap: '10px',
+        }}
+      >
+        {sorted.map(([label, value]) => (
+          <div
+            key={label}
+            style={{
+              backgroundColor: getColor(value),
+              color: 'white',
+              padding: '10px',
+              borderRadius: '8px',
+              textAlign: 'center',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            <div style={{ fontSize: '0.85rem' }}>{label}</div>
+            <div style={{ fontSize: '1rem' }}>{(value * 100).toFixed(1)}%</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
 
   return (
     <>
@@ -166,18 +259,24 @@ export const ModelPage = () => {
         </InputSection>
 
         {error && <p className="text-red-500 mt-4">{error}</p>}
-
         {predictions.length > 0 && (
-          <OutputSection>
-            <h2 style={{ marginBottom: '1rem' }}>Analysis Complete</h2>
-            <p><strong>Findings:</strong></p>
-            <ul>
-              {predictions.map((prediction, index) => (
-                <li key={index}>{prediction}</li>
-              ))}
-            </ul>
-          </OutputSection>
-        )}
+  <OutputSection>
+    <h2 style={{ marginBottom: '1rem' }}>Analysis Complete</h2>
+    <p><strong>Findings:</strong></p>
+    <ul>
+      {predictions.map((prediction, index) => (
+        <li key={index}>{prediction}</li>
+      ))}
+    </ul>
+
+    {probabilities && <HeatmapTable probabilities={probabilities} />}
+
+    {probabilities && <HeatBlockGrid probabilities={probabilities} />}
+  </OutputSection>
+)}
+
+
+
 
         {isProcessing && (
           <ProcessingOverlay>

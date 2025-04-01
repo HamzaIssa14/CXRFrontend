@@ -66,7 +66,7 @@ export const Navbar = () => {
       <NavContainer>
         <Logo to="/">
           <SquareActivity size={24} />
-          ACE Medical Imaging
+          Scanalyze Imaging
         </Logo>
         <NavLinks>
           <NavLink to="/models">Models</NavLink>
